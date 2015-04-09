@@ -1,0 +1,111 @@
+<html>
+	<head>
+		<script src="jquery.js"></script>
+		<script>
+			var context;
+            var canvas;
+            $(document).ready(function(){
+                canvas = document.getElementById("canvas");
+				context = canvas.getContext("2d");
+                scrapeAww()
+			});
+
+			function scrapeAww(){
+				$.ajax({url:"cgi-bin/cute.py",
+					Type: "GET",
+					success: function(data){
+						var image = new Image();
+                        var hw;
+                        image.src = data["image"]; 
+						image.onload = function(){
+							hw = scaleSize(image.width, image.height)
+                            canvas.width = hw[0];
+                            canvas.height = hw[1];
+							$("#spinner").hide();
+                            context.drawImage(this,0,0,this.width,this.height, 0, 0, hw[0], hw[1]);
+                            addText();
+                            setTimeout(function(){location.reload()}, 30000);
+						};
+					}
+				});
+			}
+			
+			function addText(){
+				var toptextscale = (Math.round((24/500) * canvas.height)).toString(); //24px (font) per 500px (image)
+				var bottomtextscale = (Math.round((40/500) * canvas.height)).toString();
+                var textmargin = Math.round((20/500) * canvas.height); //20px (font) per 500px (image)
+                var text1parts = ["CALM", " THE", " FUCK", " DOWN.", "  LOOK", " AT", " THIS", " CUTE", " PICTURE."];
+				var text2 = "LOOK AT IT.";
+
+                //context.font = textscale.concat("px Impact Bolder") 
+		        context.font = 'bolder '.concat(toptextscale.concat("px sans-serif"));
+                context.textAlign = 'center';
+                context.textBaseline = 'top';
+                var text1 = "";
+                var final_texts = [];
+                for(var i in text1parts){
+                    if(context.measureText(text1.concat(text1parts[i])).width > (canvas.width - (textmargin*2))){
+                        final_texts.push(text1);
+                        text1 = "";
+                        text1parts[i] = text1parts[i].replace(" ", "");
+                    }
+                    text1 = text1.concat(text1parts[i]);
+                }
+                if(text1 != ""){
+                    final_texts.push(text1);   
+                }
+                for(var i in final_texts){
+                        context.strokeStyle = "black";
+                        context.fillStyle = "white";
+                        context.lineWidth = 5;
+                        context.miterLimit = 2;
+                        context.strokeText(final_texts[i], canvas.width/2, textmargin + (context.measureText("M").width * i) + (5*i));
+                        context.strokeText(final_texts[i], canvas.width/2, textmargin + (context.measureText("M").width * i) + (5*i));
+                        context.fillText(final_texts[i], canvas.width/2, textmargin + (context.measureText("M").width * i) + (5*i));
+                }
+                
+		            context.font = 'bolder '.concat(bottomtextscale.concat("px sans-serif"));
+                    context.textBaseline = 'bottom';
+                    context.strokeStyle = "black";
+                    context.fillStyle = "white";
+                    context.lineWidth = 7;
+                    context.strokeText(text2, canvas.width/2, canvas.height - textmargin);
+                    context.fillText(text2, canvas.width/2, canvas.height - textmargin);
+        	}	
+			
+			function scaleSize(currW, currH){
+				var maxW = window.innerWidth - 100;
+				var maxH = window.innerHeight - 100;
+				var ratio = currH / currW;
+				
+				if(currH <= currW){
+					if(currW > maxW){
+						currW = maxW;
+						currH = currW * ratio;
+					}
+					if(currH > maxH){
+						currH = maxH;
+						currW = currH / ratio;
+					}
+				}
+				else{
+					if(currH > maxH){
+						currH = maxH;
+						currW = currH / ratio;
+					}
+					if(currW > maxW){
+						currW = maxW;
+						currH = currW * ratio;
+					}
+				}
+				return [currW, currH];
+			}
+			
+		</script>
+	</head>
+	<body style="background-color:#505B6E">
+		<h1 id="text" style="color:white; font-family:arial; margin-top:50px; text-align:center"></h1>
+		<img id="spinner" src="ajax-loader.gif" style="position:absolute; top:50%; left:50%; width:15px; height: 15px; margin-top: -7px; margin-left:-7px" >
+        <canvas id="canvas" style="margin-left:auto; margin-right:auto; margin-top:50px; display:block"></canvas>
+		</body>
+</html>
