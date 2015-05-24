@@ -1,20 +1,24 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
 
 import urllib2, random, re, json
 from BeautifulSoup import BeautifulSoup
 
+import cgitb
+cgitb.enable()
+
 while(True):
 	try:
-		html = BeautifulSoup(urllib2.urlopen('http://www.reddit.com/r/aww').read())
+		html = BeautifulSoup(urllib2.urlopen('http://imgur.com/r/aww').read())
 	except:
 		pass
 	else:
 		break
 
-content = html.findAll('div', {'class':'entry unvoted'})
-links = [link.find('a') for link in content]
+content = html.find('div', id='imagelist')
+images = content.findAll('img')
 
-animal_pics = [link['href'] for link in links if(re.search('i\.imgur' ,link['href']))]
+animal_pics = ["http:%s" % re.sub('b\.', '.', image['src']) for image in images if(re.search('png|jpeg|jpg' ,image['src']))]
 animal_pic = animal_pics[random.randint(0, len(animal_pics)-1)]
 
 phrases = ["you need to relax, here, have a cute animal!",
